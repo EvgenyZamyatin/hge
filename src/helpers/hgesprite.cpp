@@ -138,6 +138,36 @@ void hgeSprite::RenderEx(float x, float y, float rot, float hscale, float vscale
     hge->Gfx_RenderQuad(&quad);
 }
 
+void hgeSprite::RenderEx1(float x, float y, float sn, float cs, float hscale, float vscale)
+{
+    float tx1, ty1, tx2, ty2;
+    float sint, cost;
+
+    if(vscale==0) {
+        vscale=hscale;
+    }
+
+    tx1 = -hotX*hscale;
+    ty1 = -hotY*vscale;
+    tx2 = (width-hotX)*hscale;
+    ty2 = (height-hotY)*vscale;
+
+        cost = cs;//cosf(rot);
+        sint = sn;//sinf(rot);
+
+        quad.v[0].x  = tx1*cost - ty1*sint + x;
+        quad.v[0].y  = tx1*sint + ty1*cost + y;
+
+        quad.v[1].x  = tx2*cost - ty1*sint + x;
+        quad.v[1].y  = tx2*sint + ty1*cost + y;
+
+        quad.v[2].x  = tx2*cost - ty2*sint + x;
+        quad.v[2].y  = tx2*sint + ty2*cost + y;
+
+        quad.v[3].x  = tx1*cost - ty2*sint + x;
+        quad.v[3].y  = tx1*sint + ty2*cost + y;
+    hge->Gfx_RenderQuad(&quad);
+}
 
 void hgeSprite::RenderStretch(float x1, float y1, float x2, float y2)
 {

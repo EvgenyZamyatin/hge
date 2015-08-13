@@ -91,7 +91,13 @@ typedef hgeU32 HMUSIC;
 typedef hgeU32 HSTREAM;
 typedef hgeU32 HCHANNEL;
 #if HGE_DIRECTX_VER >= 9
-	typedef hgeU32 HSHADER;
+	struct Shader {
+		hgeU32 shader;
+		hgeU32 constantTable;		
+	};
+	typedef Shader* HSHADER;
+	#define SHADER_VERTEX 0
+	#define SHADER_PIXEL  1
 #endif
 
 
@@ -423,9 +429,12 @@ public:
     virtual void        HGE_CALL    Gfx_SetTransform(float x=0, float y=0, float dx=0, float dy=0, float rot=0, float hscale=0, float vscale=0) = 0; 
 
 #if HGE_DIRECTX_VER >= 9
-	virtual HSHADER		HGE_CALL	Shader_Create(const char *filename) = 0;
-	virtual void		HGE_CALL	Shader_Free(HSHADER shader) = 0;
-	virtual void		HGE_CALL	Gfx_SetShader(HSHADER shader) = 0;
+	virtual HSHADER	    HGE_CALL	Shader_Create(const char *filename, int type, DWORD flags = 0) = 0;
+	virtual void		HGE_CALL	Shader_Free(HSHADER shader, int type) = 0;
+	virtual void		HGE_CALL	Gfx_SetShader(HSHADER shader, int type) = 0;
+	virtual void 		HGE_CALL 	Shader_SetValue(HSHADER shader, const char *name, void* data, size_t size) = 0;
+	virtual void 		HGE_CALL 	Shader_SetFloat(HSHADER shader, const char *name, float value) = 0;
+
 #endif
 
     virtual HTARGET     HGE_CALL    Target_Create(int width, int height, bool zbuffer) = 0;

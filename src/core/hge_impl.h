@@ -181,9 +181,13 @@ public:
             float rot=0, float hscale=0, float vscale=0);
 
 #if HGE_DIRECTX_VER >= 9
-    virtual HSHADER		HGE_CALL	Shader_Create(const char *filename);
-    virtual void		HGE_CALL	Shader_Free(HSHADER shader);
-    virtual void		HGE_CALL	Gfx_SetShader(HSHADER shader);
+    virtual HSHADER	    HGE_CALL	Shader_Create(const char *filename, int type, DWORD flags = 0);
+	virtual void		HGE_CALL	Shader_Free(HSHADER shader, int type);
+	virtual void		HGE_CALL	Gfx_SetShader(HSHADER shader, int type);
+	
+	virtual void 		HGE_CALL 	Shader_SetValue(HSHADER shader, const char *name, void* data, size_t size);
+	virtual void 		HGE_CALL 	Shader_SetFloat(HSHADER shader, const char *name, float value);
+
 #endif
 
     virtual HTARGET     HGE_CALL    Target_Create(int width, int height, bool zbuffer);
@@ -290,7 +294,8 @@ public:
     int                 CurBlendMode;
     HTEXTURE            CurTexture;
 #if HGE_DIRECTX_VER >= 9
-    HSHADER				CurShader;
+    HSHADER				CurVShader;
+	HSHADER				CurPShader;
 #endif
 
     bool                _GfxInit();

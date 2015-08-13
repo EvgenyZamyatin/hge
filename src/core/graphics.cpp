@@ -1279,8 +1279,8 @@ bool HGE_Impl::_init_lost()
     }
 
     CurTexture = NULL;
-#if HGE_DIRECTX_VER >= 9
-    CurShader = NULL;
+#if HGE_DIRECTX_VER >= 9             
+    CurVShader = CurPShader = NULL;
 #endif
 
     pD3DDevice->SetTransform(D3DTS_VIEW, &matView);
@@ -1290,44 +1290,107 @@ bool HGE_Impl::_init_lost()
 }
 
 #if HGE_DIRECTX_VER >= 9
-HSHADER HGE_CALL HGE_Impl::Shader_Create(const char *filename)
-{
-    LPD3DXBUFFER					code			= NULL;
-    LPDIRECT3DPIXELSHADER9          pixelShader    = NULL;
-    HRESULT result = D3DXCompileShaderFromFile( filename,   //filepath
-                     NULL,          //macro's
-                     NULL,          //includes
-                     "ps_main",     //main function
-                     "ps_2_0",      //shader profile
-                     0,             //flags
-                     &code,         //compiled operations
-                     NULL,          //errors
-                     NULL);         //constants
-    if(FAILED(result)) {
-        _PostError("Can't create shader");
-        return NULL;
-    }
 
-    pD3DDevice->CreatePixelShader((DWORD *)code->GetBufferPointer(), &pixelShader);
+HSHADER HGE_CALL HGE_Impl::Shader_Create(const char *filename, int type, DWORD flags)
+{
+    
+    LPD3DXBUFFER					code		  = NULL;
+    LPD3DXBUFFER					errorMsgs     = NULL;
+    LPD3DXCONSTANTTABLE             constantTable = NULL;
+    hgeU32          				shader        = NULL;
+    HSHADER res = NULL;
+    if (type == SHADER_PIXEL) {
+        HRESULT result = D3DXCompileShaderFromFile( 
+        				 filename,       //filepath
+                         NULL,           //macro's
+                         NULL,           //includes
+                         "ps_main",      //main function
+                         "ps_2_0",       //shader profile
+                         flags,          //flags
+                         &code,          //compiled operations
+                         &errorMsgs,     //errors
+                         &constantTable);//constants
+        
+        if(FAILED(result)) {
+            _PostError("Can't create shader");
+            _PostError((char*)errorMsgs->GetBufferPointer());
+            return NULL;
+        }
+        LPDIRECT3DPIXELSHADER9 tmp;
+        pD3DDevice->CreatePixelShader((DWORD *)code->GetBufferPointer(), &tmp);
+        shader = (hgeU32)tmp;
+    } else {
+    	HRESULT result = D3DXCompileShaderFromFile( 
+        				 filename,       //filepath
+                         NULL,           //macro's
+                         NULL,           //includes
+                         "vs_main",      //main function
+                         "vs_2_0",       //shader profile
+                         flags,          //flags
+                         &code,          //compiled operations
+                         &errorMsgs,     //errors
+                         &constantTable);//constants
+        
+        if(FAILED(result)) {
+            _PostError("Can't create shader");
+            _PostError((char*)errorMsgs->GetBufferPointer());
+            return NULL;
+        }
+        LPDIRECT3DVERTEXSHADER9 tmp;        
+        pD3DDevice->CreateVertexShader((DWORD *)code->GetBufferPointer(), &tmp);
+        shader = (hgeU32)tmp;
+    }
     code->Release();
-    return (HSHADER)pixelShader;
+    res = new Shader();
+    res->shader        = (hgeU32)shader;
+    res->constantTable = (hgeU32)constantTable;
+    return res;
 }
-#endif
 
-#if HGE_DIRECTX_VER >= 9
-void HGE_CALL HGE_Impl::Gfx_SetShader(HSHADER shader)
+void HGE_CALL HGE_Impl::Shader_Free(HSHADER shader, int type)
+{	
+	if (type == SHADER_PIXEL) {
+	    ((LPDIRECT3DPIXELSHADER9)shader->shader)->Release();
+	} else {
+	 	((LPDIRECT3DVERTEXSHADER9)shader->shader)->Release();
+	}
+	delete shader;
+}
+
+void HGE_CALL HGE_Impl::Gfx_SetShader(HSHADER shader, int type)
 {
-    if (CurShader != shader) {
-        _render_batch();
-        CurShader = shader;
-        pD3DDevice->SetPixelShader((LPDIRECT3DPIXELSHADER9)shader);
+	if (type == SHADER_PIXEL) {
+        if (CurPShader != shader) {
+            _render_batch();
+            CurPShader = shader;
+            if (shader != NULL) {
+	            pD3DDevice->SetPixelShader((LPDIRECT3DPIXELSHADER9)(shader->shader));
+	        } else {
+	            pD3DDevice->SetPixelShader(NULL);	        
+	        }
+        }
+    } else {
+    	if (CurVShader != shader) {
+            _render_batch();
+            CurVShader = shader;
+            if (shader != NULL) {
+            	pD3DDevice->SetVertexShader((LPDIRECT3DVERTEXSHADER9)(shader->shader));
+            } else {
+            	pD3DDevice->SetVertexShader(NULL);            
+            }
+        }
     }
 }
-#endif
 
-#if HGE_DIRECTX_VER >= 9
-void HGE_CALL HGE_Impl::Shader_Free(HSHADER shader)
-{
-    ((LPDIRECT3DPIXELSHADER9)shader)->Release();
+void HGE_CALL 	HGE_Impl::Shader_SetValue(HSHADER shader, const char *name, void* data, size_t size) {
+	D3DXHANDLE handle = ((LPD3DXCONSTANTTABLE)shader->constantTable)->GetConstantByName(NULL, (LPCSTR)name);
+	((LPD3DXCONSTANTTABLE)shader->constantTable)->SetValue(pD3DDevice, handle, (LPCVOID)data, (UINT)size);
 }
+
+void HGE_CALL 	HGE_Impl::Shader_SetFloat(HSHADER shader, const char *name, float value) {
+	D3DXHANDLE handle = ((LPD3DXCONSTANTTABLE) (shader->constantTable))->GetConstantByName(NULL, (LPCSTR)name);
+	((LPD3DXCONSTANTTABLE) (shader->constantTable))->SetFloat(pD3DDevice, handle, value);
+}
+	
+
 #endif
