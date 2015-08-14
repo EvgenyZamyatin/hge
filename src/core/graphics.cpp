@@ -1313,7 +1313,8 @@ HSHADER HGE_CALL HGE_Impl::Shader_Create(const char *filename, int type, DWORD f
         
         if(FAILED(result)) {
             _PostError("Can't create shader");
-            _PostError((char*)errorMsgs->GetBufferPointer());
+            if (errorMsgs != NULL)
+            	_PostError((char*)errorMsgs->GetBufferPointer());
             return NULL;
         }
         LPDIRECT3DPIXELSHADER9 tmp;
@@ -1333,7 +1334,8 @@ HSHADER HGE_CALL HGE_Impl::Shader_Create(const char *filename, int type, DWORD f
         
         if(FAILED(result)) {
             _PostError("Can't create shader");
-            _PostError((char*)errorMsgs->GetBufferPointer());
+            if (errorMsgs != NULL)
+            	_PostError((char*)errorMsgs->GetBufferPointer());
             return NULL;
         }
         LPDIRECT3DVERTEXSHADER9 tmp;        
