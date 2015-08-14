@@ -132,6 +132,16 @@ void* hgeResourceManager::GetResource(const char *name, int resgroup)
     return 0;
 }
 
+HSHADER hgeResourceManager::GetShader(const char* name) {
+	HSHADER reshandle;
+	ResDesc *Res=FindRes(this, RES_SHADER, name);
+	if (Res) {
+		return (HSHADER)Res->Get(this);
+	} else {
+		return NULL;
+	}
+}
+
 HTEXTURE hgeResourceManager::GetTexture(const char *name, int resgroup)
 {
     HTEXTURE reshandle;

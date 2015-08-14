@@ -29,6 +29,9 @@
 #define RES_DISTORT		11
 #define RES_STRTABLE	12
 
+#if HGE_DIRECTX_VER == 9
+#define RES_SHADER 		13
+#endif
 
 void		AddRes(hgeResourceManager *rm, int type, ResDesc *resource);
 ResDesc*	FindRes(hgeResourceManager *rm, int type, const char *name);
@@ -61,6 +64,18 @@ struct RTexture : public ResDesc {
     virtual hgeU32 Get(hgeResourceManager *rm);
     virtual void  Free();
 };
+
+#if HGE_DIRECTX_VER == 9
+struct RShader : public ResDesc {
+    char		  filename[MAXRESCHARS];
+    int 		  type;
+
+    static  void  Parse(hgeResourceManager *rm, RScriptParser *sp, const char *name,
+                        const char *basename);
+    virtual hgeU32 Get(hgeResourceManager *rm);
+    virtual void  Free();
+};
+#endif
 
 struct REffect : public ResDesc {
     char		  filename[MAXRESCHARS];

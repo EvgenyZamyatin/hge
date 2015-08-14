@@ -20,7 +20,7 @@
 #include "hgestrings.h"
 
 
-#define RESTYPES 13
+#define RESTYPES 14
 #define MAXRESCHARS 128
 
 
@@ -62,6 +62,7 @@ public:
 	HMUSIC				GetMusic(const char *name, int resgroup=0);
 	HSTREAM				GetStream(const char *name, int resgroup=0);
 	HTARGET				GetTarget(const char *name);
+	HSHADER             GetShader(const char* name);
 
 	hgeSprite*			GetSprite(const char *name);
 	hgeAnimation*		GetAnimation(const char *name);

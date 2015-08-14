@@ -39,6 +39,7 @@ keyword keytable[]= {
     { "Particle",	TTRES_PARTICLE	},
     { "Distortion",	TTRES_DISTORT	},
     { "StringTable",TTRES_STRTABLE	},
+    { "Shader",     TTRES_SHADER    },
 
     { "filename",	TTPAR_FILENAME	},
     { "resgroup",	TTPAR_RESGROUP	},
@@ -63,6 +64,7 @@ keyword keytable[]= {
     { "spacing",	TTPAR_SPACING	},
     { "sprite",		TTPAR_SPRITE	},
     { "mesh",		TTPAR_MESH		},
+    { "type",  		TTPAR_SHADERTYPE},
 
     { "COLORMUL",	TTCON_COLORMUL	},
     { "COLORADD",	TTCON_COLORADD	},

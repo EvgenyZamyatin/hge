@@ -291,7 +291,6 @@ void ScriptParseSpriteAnim(RScriptParser *sp, RSprite *rc, bool anim)
 
 
 /////////////// RScript //
-
 void RScript::Parse(hgeResourceManager *rm, RScriptParser *sp, const char *sname,
                     const char *sbasename)
 {
@@ -401,7 +400,11 @@ void RScript::Parse(hgeResourceManager *rm, RScriptParser *sp, const char *sname
                         case RES_STRTABLE:
                             RStringTable::Parse(rm, np, lname, basename);
                             break;
+                        case RES_SHADER:
+                        	RShader::Parse(rm, np, lname, basename);
+                        	break;
                         }
+
                     } else {
                         np->ScriptPostError("Illegal resource syntax, "," found; '{' expected.");
                         while((np->tokentype <= TTRES__FIRST || np->tokentype >= TTRES__LAST) && np->tokentype != TTEND) {
@@ -514,6 +517,66 @@ void RTexture::Free()
     }
     handle=0;
 }
+
+#if HGE_DIRECTX_VER == 9
+/////////////// RShader //
+void RShader::Parse(hgeResourceManager *rm, RScriptParser *sp, const char *name,
+                     const char *basename)
+{
+    RShader *rc, *base;
+
+    rc=new RShader();
+    base = NULL;
+    if(base) {
+        *rc=*base;
+    } else {
+        rc->resgroup=0;
+    }
+    rc->handle=0;
+    strcpy(rc->name, name);
+    
+    while(ScriptSkipToNextParameter(sp,false)) {
+        switch(sp->tokentype) {
+        case TTPAR_FILENAME:
+            sp->get_token();
+            sp->get_token();
+            strcpy(rc->filename, sp->tkn_string());
+            break;
+
+		case TTPAR_SHADERTYPE:
+            sp->get_token();
+            sp->get_token();
+            if ((sp->tkn_string())[0] == 'P' || (sp->tkn_string())[0] == 'p')
+            	rc->type=SHADER_PIXEL;
+            else 
+            	rc->type=SHADER_VERTEX;
+            break;
+
+        default:
+            ScriptSkipToNextParameter(sp,true);
+            break;
+        }
+    }
+
+    AddRes(rm, RES_SHADER, rc);
+}
+
+hgeU32 RShader::Get(hgeResourceManager *rm)
+{
+    if(!handle) {
+        handle=(hgeU32)hge->Shader_Create(filename, type);
+    }
+    return handle;
+}
+
+void RShader::Free()
+{
+    if(handle) {
+        hge->Shader_Free((HSHADER)handle, type);
+    }
+    handle=0;
+}
+#endif
 
 /////////////// REffect //
 
